@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
@@ -270,6 +270,15 @@ template = """
             min-height: 150px;
         }
         
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
         footer {
             background: #1e3c72;
             color: white;
@@ -409,7 +418,12 @@ template = """
 
     <section id="contact" class="section" style="background: #f8f9fa;">
         <h2 class="section-title">Get In Touch</h2>
-        <form class="contact-form" action="/contact" method="POST">
+        {% if success %}
+        <div class="success-message">
+            Thank you for your message! I'll get back to you soon.
+        </div>
+        {% endif %}
+        <form class="contact-form" method="POST">
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
@@ -438,27 +452,25 @@ template = """
 </html>
 """
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
+    success = False
+    
+    if request.method == 'POST':
+        # Handle form submission
+        success = True
+        # In production, you could send email or save to database here
+    
     # Portfolio data - customize these values
     data = {
         'name': 'Jonathan Williams',
         'title': 'Senior Banking Professional | Wealth Management Specialist',
         'years_experience': 15,
         'email': 'j.williams@banking.com',
-        'phone': '+1 (555) 123-4567'
+        'phone': '+1 (555) 123-4567',
+        'success': success
     }
     return render_template_string(template, **data)
 
-@app.route('/contact', methods=['POST'])
-def contact():
-    # Handle contact form submission
-    # In production, you would save this data or send an email
-    return render_template_string("""
-        <h1>Thank you for your message!</h1>
-        <p>I'll get back to you soon.</p>
-        <a href="/">Back to Home</a>
-    """)
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+# This is required for Vercel
+app.debug = False
